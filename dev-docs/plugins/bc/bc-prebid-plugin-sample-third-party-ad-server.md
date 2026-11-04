@@ -27,7 +27,7 @@ The following is a sample Brightcove Prebid Plugin integration that invokes preb
 
 #### Sample Prebid Plugin Integration, Using Results From a Preferred Ad Server, Prebid Run in Header
 
-```
+```html
 <!doctype html>
 <html>
 <head>
@@ -42,16 +42,16 @@ The following is a sample Brightcove Prebid Plugin integration that invokes preb
         window.bc_plugin_pbjs = { plugin_prebid_options: {} };
 
         // specify prebid parameters as the value of biddersSpec
-        // the set of bidders here shows how to specify the AppNexus video bidder:  appnexus
+        // the set of bidders here shows how to specify the Microsoft video bidder:  msft
         var params = {
             code : 'my-video-tag',
             sizes : [640, 480],
             mediaType: 'video',
             bids: [
                 {
-                    bidder: 'appnexus',
+                    bidder: 'msft',
                     params: {
-                        placementId: 12334567,
+                        placement_id: 12334567,
                         video: {
                             skippable: true,
                             playback_method: ['auto_play_sound_off']
@@ -116,7 +116,7 @@ The following is a sample Brightcove Prebid Plugin integration that invokes preb
 
 #### Sample Prebid Plugin Integration, Using Results From a Preferred Ad Server; Prebid Runs After Player Has Loaded
 
-```
+```html
 <!doctype html>
 <html>
 <head>
@@ -152,16 +152,16 @@ The following is a sample Brightcove Prebid Plugin integration that invokes preb
 
     // set the prebid options
     // specify prebid parameters as the value of biddersSpec
-    // the set of bidders here shows how to specify the AppNexus video bidder:  appnexus
+    // the set of bidders here shows how to specify the Microsoft video bidder:  msft
     var params = {
          code : 'my-video-tag',
          sizes : [640, 480],
          mediaType: 'video',
          bids: [
                 {
-                    bidder: 'appnexus',
+                    bidder: 'msft',
                     params: {
-                        placementId: 12334567,
+                        placement_id: 12334567,
                         video: {
                             skippable: true,
                             playback_method: ['auto_play_sound_off']
@@ -193,5 +193,3 @@ The following is a sample Brightcove Prebid Plugin integration that invokes preb
 </body>
 </html>
 ```
-
-

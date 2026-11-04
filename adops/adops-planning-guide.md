@@ -9,10 +9,13 @@ sbUUID: 3.2
 # Ad Ops Planning Guide
 {: .no_toc }
 
-* TOC
+- TOC
 {: toc }
 
-There are several decisions you need to make as you’re planning out your Prebid implementation. The following diagram guides you through these decisions. Click on the boxes to navigate to detailed information about each one. (See below for an overview of these options.)
+{: .alert.alert-info :}
+This guide covers Prebid used as a **header bidding library**, where your ad server makes the final decision and needs line items for Prebid's bids. If you use Prebid as a **complete bidding library**, where your ad server (if any) bids into Prebid and Prebid chooses the winner, most of these steps (send all bids vs. top price, line item creation, price granularity) don't apply. See [The ad server bids into Prebid](/adops/ad-server-integration.html#the-ad-server-bids-into-prebid) instead.
+
+There are several decisions you need to make as you’re planning out your Prebid implementation as a header bidding library. The following diagram guides you through these decisions. Click on the boxes to navigate to detailed information about each one. (See below for an overview of these options.)
 
 <img src="/assets/images/ad-ops/planning/ad-ops-planning.png" alt="Ad Ops Decisions" usemap="#decisions">
 
@@ -29,11 +32,23 @@ There are several decisions you need to make as you’re planning out your Prebi
 {: .alert.alert-success :}
 As you go through the steps, we recommend that you document all your decisions. Many of the decisions will need to be made only once when you first set up Prebid, so good documentation will help you and future users understand the decisions and why they were made.
 
+## AdOps Video Overview
+
+An overview of the process of planning a Prebid integration for ad operations.
+
+{% include vimeo-iframe.html id="891677441" title="Prebid Ad Operations Planning" %}
+
+Notes:
+
+- [Creative Considerations](/adops/creative-considerations.html)
+- [Deals in Prebid](/adops/deals.html)
+- [Transcript of this video overview](/adops/adops-overview-video.html)
+
 ## Planning Process
 
 We’ve presented the decision steps in what we believe is a logical order, but you can go in any order that makes sense to you and your implementation. Here is a brief overview of each step so you can decide where to start.
 
-[Ad Server Integration](/adops/ad-server-integration.html): Determine what type of support your ad server has for header bidding and whether you want to add that into your configuration.
+[Ad Server Integration](/adops/ad-server-integration.html): Decide whether Prebid works as a header bidding library, with your ad server making the final decision, or as a complete bidding library, with your ad server bidding into Prebid. Then determine what type of support your ad server has for that approach.
 
 [Send All Bids vs Top Price](/adops/send-all-vs-top-price.html): You can choose to send all bids that are received from header bidding demand partners, or send only the top bid. Learn the advantages and disadvantages of each.
 
@@ -51,6 +66,8 @@ Some additional resources that might be helpful as you work through your setup i
 
 [Deals in Prebid](/adops/deals.html): You can negotiate deals with header bidding demand partners and have them compete with ad server inventory. You’ll need to create additional line items to support these deals. This document explains how to set up Prebid to make that happen.
 
+[Prebid Mobile](/adops/mobile-adops.html): Read this if you have an app integration with Prebid Mobile.
+
 ## Terminology
 
 Throughout this planning guide, we use the following terms to describe elements within the ad server. These terms may vary among different ad servers.
@@ -64,4 +81,5 @@ Throughout this planning guide, we use the following terms to describe elements 
 **Key Value Pair (KVP)**: Additional parameters sent to the ad server to provide additional targeting or reporting information. Prebid sends keys with associated values that enable the ad server to match a line item to the bid and display the winning creative. A key value pair for a Prebid parameter can include things like the bid price or the name of the bidder. See [Key Values](/adops/key-values.html) for more information.
 
 ## Next Step
-[Ad Server Integration](/adops/ad-server-integration.html)
+
+- [Ad Server Integration](/adops/ad-server-integration.html)

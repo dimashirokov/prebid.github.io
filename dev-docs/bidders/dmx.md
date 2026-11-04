@@ -5,7 +5,7 @@ pbs: true
 media_types: banner, video
 biddercode: dmx
 gvl_id: 144
-gdpr_supported: true
+tcfeu_supported: true
 pbjs_version_notes: not supported in 7.0+
 sidebarType: 1
 ---
@@ -22,4 +22,4 @@ sidebarType: 1
 | memberid | optional | MemberId from DistrictM UI (legacy: replaced by publisher_id) | 'member1' | string |
 | dmxid | optional | Placement ID from DistrictM (legacy: replaced by tagid) | '123abc' | string |
 
-(See [districtmDMX](/dev-docs/bidders.html#districtmDMX) for Prebid.js)
+(See [districtmDMX](/dev-docs/bidders/districtmdmx.html) for Prebid.js)

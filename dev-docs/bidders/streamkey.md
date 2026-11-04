@@ -3,23 +3,28 @@ layout: bidder
 title: Streamkey
 description: Prebid Streamkey.tv Bidder Adapter
 pbjs: true
+enable_download: false
+pbjs_version_notes: "This alias is not currently registered by its Prebid.js module; specific reason unknown."
 pbs: true
+media_types: video,banner
+gvl_id: 410 (adtelligent)
+tcfeu_supported: true
+gpp_supported: true
 biddercode: streamkey
 aliasCode: adtelligent
-media_types: video
 sidebarType: 1
 ---
 
-### Bid params
+## Bid params
 
 {: .table .table-bordered .table-striped }
-| Name  | Scope    | Description                     | Example  | Type      |
-|-------|----------|---------------------------------|----------|-----------|
+| Name | Scope | Description | Example | Type |
+| --- | --- | --- | --- | --- |
 | `aid` | required | The traffic source ID | `232131` | `integer` |
 
+## Test Parameters
 
-### Test Parameters
-```
+``` javascript
     var adUnits = [
 
       // Video instream adUnit

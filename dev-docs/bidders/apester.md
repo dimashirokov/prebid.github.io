@@ -1,0 +1,80 @@
+---
+layout: bidder
+title: Apester
+description: Prebid Apester Bidder Adaptor
+biddercode: apester
+userIds: britepoolId, criteo, id5Id, identityLink, liveIntentId, netId, parrableId, pubCommonId, unifiedId
+tcfeu_supported: true
+usp_supported: true
+gvl_id: 354
+coppa_supported: false
+schain_supported: true
+gpp_sids: tcfeu, tcfca, usnat, usstate_all, usp
+floors_supported: true
+media_types: banner, video
+prebid_member: false
+safeframes_ok: false
+deals_supported: false
+pbs_app_supported: true
+fpd_supported: false
+ortb_blocking_supported: false
+multiformat_supported: will-bid-on-one
+pbjs: true
+pbs: true
+sidebarType: 1
+---
+
+## Bid Params for Prebid.js
+
+{: .table .table-bordered .table-striped }
+
+| Name       | Scope    | Description                                                                              | Example                      | Type     |
+|------------|----------|------------------------------------------------------------------------------------------|------------------------------|----------|
+| `cId`      | required | The connection ID from Apester.                                                          | `'562524b21b1c1f08117fc7f9'` | `string` |
+| `pId`      | required | The publisher ID from Apester (pbjs only).                                               | `'59ac17c192832d0011283fe3'` | `string` |
+| `bidFloor` | optional | The minimum bid value desired. Apester will not respond with bids lower than this value. | `0.90`                       | `float`  |
+
+## Bid Params for Prebid Server
+
+{: .table .table-bordered .table-striped }
+
+| Name       | Scope    | Description                                                                              | Example                      | Type     |
+|------------|----------|------------------------------------------------------------------------------------------|------------------------------|----------|
+| `cId`      | required | The connection ID from Apester.                                                          | `'562524b21b1c1f08117fc7f9'` | `string` |
+
+### Example
+
+  ```javascript
+var adUnits = [{
+    code: 'banner-div',
+    mediaTypes: {
+        banner: {
+            sizes: [
+                [300, 250],
+                [728, 90]
+            ]
+        }
+    },
+    bids: [{
+        bidder: 'apester',
+        params: {
+            cId: '562524b21b1c1f08117fc7f9', // Required - PROVIDED DURING SETUP...
+            pId: '59ac17c192832d0011283fe3', // Required - PROVIDED DURING SETUP...
+            bidFloor: 1.23                   // Optional
+        }
+    }]
+}
+];
+
+// configure pbjs to enable user syncing
+pbjs.setConfig({
+    userSync: {
+        filterSettings: {
+            iframe: {
+                bidders: 'apester',
+                filter: 'include'
+            }
+        }
+    }
+});
+```

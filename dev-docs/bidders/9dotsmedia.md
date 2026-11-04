@@ -5,7 +5,9 @@ description: 9Dots Media Bidder Adapter
 biddercode: 9dotsmedia
 aliasCode: adtelligent
 media_types: video,banner
-gdpr_supported: true
+gvl_id: 410 (adtelligent)
+tcfeu_supported: true
+gpp_supported: true
 userIds: britepoolId, criteo, id5Id, identityLink, liveIntentId, netId, parrableId, pubCommonId, unifiedId
 schain_supported: true
 coppa_supported: true
@@ -13,25 +15,28 @@ usp_supported: true
 safeframes_ok: true
 prebid_member: true
 pbjs: true
+enable_download: false
+pbjs_version_notes: "This alias is not currently registered by its Prebid.js module; specific reason unknown."
 pbs: false
 deals_supported: false
 sidebarType: 1
 ---
 
-### Bid params
+## Bid params
 
 {: .table .table-bordered .table-striped }
-| Name  | Scope    | Description                     | Example  | Type      |
-|-------|----------|---------------------------------|----------|-----------|
-| `aid` | required | The source ID from 9Dots Media.   | `12412` | `integer` |
+| Name | Scope | Description | Example | Type |
+| --- | --- | --- | --- | --- |
+| `aid` | required | The source ID from 9Dots Media. | `12412` | `integer` |
 
-### Description
+## Description
+
 9Dots Media header bidding adapter connects with 9Dots Media demand sources in order to fetch bids.
 This adapter provides a solution for accessing Video demand and display demand.
 
+## Test Parameters
 
-### Test Parameters
-```
+``` javascript
     var adUnits = [
 
       // Video instream adUnit

@@ -2,16 +2,21 @@
 layout: page_v2
 title: Intersection Module
 display_name: Intersection
+
 description: Real Time Intersection
 page_type: module
 module_type: rtd
 module_code : intersectionRtdProvider
-enable_download : true
+enable_download : false
+pbjs_version_notes: removed in 11.0
 sidebarType : 1
 ---
 
 # Intersection Module
 {:.no_toc}
+
+{: .alert.alert-warning :}
+The Intersection RTD module was removed in Prebid.js 11.0.
 
 * TOC
 {:toc}
@@ -23,35 +28,42 @@ The Intersection module provides intersection for ad slots on the page using
 
 Implementation works like this:
 
- 1) Build the Intersection module into the Prebid.js package with:
+1. Build the Intersection module into the Prebid.js package with:
 
-```
-gulp build --modules=intersectionRtdProvider&...
-```
+    ```bash
 
-2) Use `setConfig` to instruct the browser to obtain the intersection data
+    gulp build --modules=intersectionRtdProvider&...
+    ```
+
+2. Use `setConfig` to instruct the browser to obtain the intersection data
 
 ## Configuration
 
 This module is configured as part of the `realTimeData.dataProviders` object:
 
+```javascript
+
+pbjs.setConfig({
+    "realTimeData": {
+        auctionDelay: 100,
+        dataProviders:[{          
+            "name": "intersection",
+            "waitForIt": true
+        }]
+    }
+});
+
 ```
-    pbjs.setConfig({
-        "realTimeData": {
-            auctionDelay: 100,
-            dataProviders:[{          
-                "name": "intersection",
-                "waitForIt": true
-            }]
-        }
-    });
-```
+
+The optional `waitForIt` flag instructs the module to delay the auction until intersection data is collected for all ad units or the `auctionDelay` timeout is reached. It defaults to `false`.
 
 ## Output
 
 For each bidder, the module adds intersection in a JSON format.
 Example:
-```
+
+```javascript
+
 {
   "intersection":{
     'boundingClientRect': {
@@ -72,4 +84,3 @@ Example:
   }
 }
 ```
-

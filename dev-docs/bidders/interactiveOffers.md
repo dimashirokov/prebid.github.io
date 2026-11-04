@@ -3,22 +3,24 @@ layout: bidder
 title: InteractiveOffers
 description: Prebid InteractiveOffers.com Bidder Adapter
 pbs: true
+pbs_biddercode: interactiveoffers
 pbjs: true
 biddercode: interactiveOffers
-gdpr_supported: false
+tcfeu_supported: false
 media_types: banner
 sidebarType: 1
 ---
 
-### Note:
+## Note
+
 Module that connects to interactiveOffers demand sources. Param partnerId is required.
 
 ### Bid Params
 
 {: .table .table-bordered .table-striped }
-| Name          | Scope    | Description | Example | Type     |
-|---------------|----------|-------------|---------|----------|
-| `partnerId` | required |  Partner id          | 'abc123'   | `string` |
+| Name        | Scope    | Description | Example  | Type     |
+|-------------|----------|-------------|----------|----------|
+| `partnerId` | required | Partner id  | 'abc123' | `string` |
 
 Example:
 

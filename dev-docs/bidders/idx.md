@@ -3,7 +3,7 @@ layout: bidder
 title: IDX bidder adapter
 description: Prebid IDX Bidder Adapter
 biddercode: idx
-gdpr_supported: false
+tcfeu_supported: false
 usp_supported: false
 coppa_supported: false
 schain_supported: false
@@ -13,13 +13,15 @@ safeframes_ok: true
 deals_supported: false
 floors_supported: false
 fpd_supported: false
-pbjs: false
+pbjs: true
+enable_download: false
+pbjs_version_notes: Unknown; no specific reason for unavailability has been documented.
 pbs: false
 prebid_member: false
 sidebarType: 1
 ---
 
-### Bid Params
+## Bid Params
 
 {: .table .table-bordered .table-striped }
 | Name          | Scope    | Description           | Example   | Type      |

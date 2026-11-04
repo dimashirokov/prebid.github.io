@@ -6,7 +6,7 @@ biddercode: lasso
 pbjs: true
 pbs: false
 media_types: banner
-gdpr_supported: false
+tcfeu_supported: false
 gvl_id: none
 coppa_supported: true
 usp_supported: true
@@ -16,14 +16,18 @@ floors_supported: false
 fpd_supported: false
 multiformat_supported: will-not-bid
 sidebarType: 1
+gpp_sids: usnat, usstate_all, usp
 ---
 
-### Note:
-The Lasso Bidding adapter requires setup before beginning. Please contact us at headerbidding@lassomarketing.io
+### Note
+
+The Lasso Bidding adapter requires setup before beginning. Please contact us at <headerbidding@lassomarketing.io>
 
 ### Bid Params
 
 {: .table .table-bordered .table-striped }
-| Name        | Scope    | Description                      | Example                              | Type     |
+| Name | Scope | Description | Example | Type |
 |-------------|----------|----------------------------------|--------------------------------------|----------|
-| `adUnitId`      | required | Unique adUnitId from Lasso         | `'12345'`    | `string` |
+| `adUnitId` | required | Unique adUnitId from Lasso | `'12345'` | `string` |
+| `npi` | optional | | | `string` |
+| `aimOnly` | optional | | | `boolean` |

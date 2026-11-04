@@ -8,6 +8,7 @@ sidebarType: 1
 ---
 
 # Show Native Ads with Prebid.js
+
 {: .no_toc }
 
 {% capture change-notice %}
@@ -19,7 +20,7 @@ using the [improved Prebid.js native ad](/prebid/native-implementation.html) sup
 
 In this tutorial, we'll set up Prebid.js to show native ads.
 
-We'll use the [AppNexus adapter]({{site.github.url}}/dev-docs/bidders.html#appnexus) since that adapter supports native ads, but the concepts and setup will be largely the same for any bidder adapter that supports the `"native"` media type.
+We'll use the [Microsoft adapter]({{site.github.url}}/dev-docs/bidders/msft.html) since that adapter supports native ads, but the concepts and setup will be largely the same for any bidder adapter that supports the `"native"` media type.
 
 Similarly, we'll use Google Ad Manager as the ad server, but the concept and implementation should be pretty similar to other ad servers.
 
@@ -40,17 +41,17 @@ At a high level, Prebid.js' support for native ads works like this:
 
 The native ad responses get placed on specific keys that are sent into your ad server. For example:
 
-+ `hb_native_title`
-+ `hb_native_body`
-+ `hb_native_body2`
-+ `hb_native_brand`
-+ `hb_native_image`
-+ `hb_native_icon`
-+ `hb_native_linkurl`
-+ `hb_native_privacy`
-+ `hb_native_privicon`
-+ `hb_native_rating`
-+ `hb_native_cta`
+* `hb_native_title`
+* `hb_native_body`
+* `hb_native_body2`
+* `hb_native_brand`
+* `hb_native_image`
+* `hb_native_icon`
+* `hb_native_linkurl`
+* `hb_native_privacy`
+* `hb_native_privicon`
+* `hb_native_rating`
+* `hb_native_cta`
 
 Note that these keys correspond directly to the `mediaTypes.native` object you define in your ad unit (which is [described in more detail below](#native-ad-keys)).
 
@@ -60,7 +61,7 @@ The ad ops team will then reference these keys in the ad server to set up the ti
 
 Keep the following prerequisites in mind during the implementation:
 
-+ Make sure to work with native-enabled bidders. To see which bidders have native demand, see [Bidders with Video and Native Demand]({{site.baseurl}}/dev-docs/bidders.html#bidders-with-video-and-native-demand).
+* Make sure to work with native-enabled bidders. To see which bidders have native demand, see [Bidders with Video and Native Demand]({{site.baseurl}}/dev-docs/bidders.html).
 
 ## Implementation
 
@@ -68,17 +69,17 @@ This section describes the implementation using code samples, but ignores some o
 
 ### 1. Set up your ad slot
 
-In this example we'll store the ad slot info in a variable for reference throughout the page.  We use a 1x1 static ad slot size since AppNexus (our demand partner in this example) uses that size for native creatives.
+In this example we'll store the ad slot info in a variable for reference throughout the page.  We use a 1x1 static ad slot size since Microsoft (our demand partner in this example) uses that size for native creatives.
 
-{% highlight js %}
+```javascript
 const slot = {
     code: '/19968336/prebid_native_adunit',
     div: 'div-prebid-native-test-1',
     size: [1, 1],
 };
-{% endhighlight %}
+```
 
-<a name="native-ad-keys" />
+<a name="native-ad-keys"></a>
 
 ### 2. Add native ad units
 
@@ -109,9 +110,9 @@ Each key's value is an object with several fields.  Most important is the `requi
   </p>
 </div>
 
-<a name="native-object" />
+<a name="native-object"></a>
 
-{% highlight js %}
+```javascript
 
 pbjs.addAdUnits({
     code: slot.code,
@@ -144,17 +145,43 @@ pbjs.addAdUnits({
         }
     },
     bids: [{
-        bidder: 'appnexus',
+        bidder: 'msft',
         params: {
-            placementId: 13232354
+            placement_id: 13232354
         }
     }, ]
 })
 
-{% endhighlight %}
+```
 
 {: .alert.alert-danger :}
-For each native ad unit, all of the bidders within that ad unit must have declared native support in their adapter if you want ads to appear.  If there are any bidders without native support in a native ad unit, requests will not be made to those bidders.  For a list of bidders with native support, see [Bidders with Video and Native Demand]({{site.baseurl}}/dev-docs/bidders.html#bidders-with-video-and-native-demand).
+For each native ad unit, all of the bidders within that ad unit must have declared native support in their adapter if you want ads to appear.  If there are any bidders without native support in a native ad unit, requests will not be made to those bidders.  For a list of bidders with native support, see [Bidders with Video and Native Demand]({{site.baseurl}}/dev-docs/bidders.html).
+
+<a name="native-video-asset"></a>
+
+#### Native video asset
+
+Since Prebid.js 11.41, native ad units can request a video asset. It must define `mimes`, `protocols`, `minduration` and `maxduration`, which Prebid.js passes on as the OpenRTB native `video` asset:
+
+```javascript
+mediaTypes: {
+    native: {
+        title: {
+            required: true,
+            len: 80
+        },
+        video: {
+            required: true,
+            mimes: ['video/mp4'],
+            protocols: [2, 3, 5, 6],
+            minduration: 5,
+            maxduration: 30
+        }
+    }
+}
+```
+
+The bid's video asset is the VAST XML (the OpenRTB `vasttag`), available in native templates as `##hb_native_video##`. Prebid.js does not play it: the native template or renderer must load the VAST into a video player itself.
 
 #### Pre-defined native types
 
@@ -164,16 +191,16 @@ For now there is only the `image` type, but more will be added.
 
 The image native ad type implies the following required fields:
 
-+ image
-+ title
-+ sponsoredBy
-+ clickUrl
+* image
+* title
+* sponsoredBy
+* clickUrl
 
 And the following optional fields:
 
-+ body
-+ icon
-+ cta
+* body
+* icon
+* cta
 
 A native "image-type" ad unit can be set up as shown in the following example.
 
@@ -184,11 +211,11 @@ const adUnits = [{
         native: {
             type: 'image'
         }
-    }
+    },
     bids: [{
-        bidder: 'appnexus',
+        bidder: 'msft',
         params: {
-            placementId: 13232354
+            placement_id: 13232354
         }
     }]
 }];
@@ -196,9 +223,9 @@ const adUnits = [{
 
 {% include dev-docs/native-image-asset-sizes.md %}
 
-### 3. Add your native ad tag to the page body as usual:
+### 3. Add your native ad tag to the page body as usual
 
-{% highlight html %}
+```html
 <div id="div-prebid-native-test-1">
     <script>
         googletag.cmd.push(function() {
@@ -206,7 +233,7 @@ const adUnits = [{
         });
     </script>
 </div>
-{% endhighlight %}
+```
 
 ## Sending Asset Placeholders
 
@@ -280,8 +307,8 @@ The `native-trk.js` script from `prebid-universal-creative` can replace native p
 
 ## Working Examples
 
-+ [Prebid Native Examples](/dev-docs/examples/native-ad-example.html)
+* [Prebid Native Examples](/dev-docs/examples/native-ad-example.html)
 
 ## Further Reading
 
-+ [GAM Step by Step - Native Creatives](/adops/gam-native.html) (Ad Ops Setup Instructions)
+* [GAM Step by Step - Native Creatives](/adops/gam-native.html) (Ad Ops Setup Instructions)

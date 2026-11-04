@@ -3,11 +3,11 @@ layout: bidder
 title: Kubient
 description: Prebid Kubient Bidder Adapter
 pbjs: true
-pbs: true
+pbs: false
 schain_supported: true
 biddercode: kubient
 media_types: banner, video
-gdpr_supported: true
+tcfeu_supported: true
 usp_supported: true
 coppa_supported: true
 tcf2_supported: true
@@ -15,7 +15,7 @@ gvl_id: 794
 sidebarType: 1
 ---
 
-### Note:
+## Note
 
 The Kubient Bidder Adapter requires setup and approval before beginning. Please reach out to <prebid@kubient.com> for more details.
 
@@ -73,7 +73,6 @@ var adUnits = [
 ### Bid Params
 
 {: .table .table-bordered .table-striped }
-| Name   | Scope    | Description                                      | Example                  | Type     |
-|--------|----------|--------------------------------------------------|--------------------------|----------|
-| zoneid | required | The AdUnit or Tag specific ID                    | `'5fbb948f1e22b'`        | `string` |
-
+| Name   | Scope    | Description                   | Example           | Type     |
+|--------|----------|-------------------------------|-------------------|----------|
+| zoneid | required | The AdUnit or Tag specific ID | `'5fbb948f1e22b'` | `string` |

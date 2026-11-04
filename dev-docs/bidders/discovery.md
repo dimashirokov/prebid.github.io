@@ -8,13 +8,14 @@ pbjs: true
 enable_download: true
 sidebarType: 1
 ---
-### Note:
+### Note
 
 The DiscoveryDSP Bidding adapter requires setup before beginning. Please contact us at <media-support@popin.cc>
 
 ### Bid Params
 
 {: .table .table-bordered .table-striped }
+
 | Name          | Scope    | Description           | Example   | Type      |
 |---------------|----------|-----------------------|-----------|-----------|
 | `token`      | required | publisher token        | `'1e100887dd614b7f69fdd1360437'`    | `string` |
@@ -25,7 +26,8 @@ The DiscoveryDSP Bidding adapter requires setup before beginning. Please contact
 #### Prebid Server Test Request
 
 banner
-```
+
+```javascript
 var adUnits = [
       {
         code: "test-div-1",
@@ -49,7 +51,8 @@ var adUnits = [
 ```
 
 native
-```
+
+```javascript
 var adUnits = [
       {
         code: "test-div-2",

@@ -11,6 +11,7 @@ sidebarType: 4
 The Prebid Video Module allows Prebid to directly integrate with a Video Player.
 
 The Video Module will allow Prebid.js to automatically:
+
 - render bids in the desired video player
 - mark used bids as won
 - trigger player and media events
@@ -29,17 +30,18 @@ The Video Module does not load the Video Player source files on the page. The pu
 
 The first step is to include the submodules for the Video Players that you will be integrating with in your build.
 
-{% highlight bash %}
+```bash
 gulp build --modules=jwplayerVideoProvider,bidAdapter1,bidAdapter2
-{% endhighlight %}
+```
 
 The following Video Players are currently supported:
 
 {: .table .table-bordered .table-striped }
 | Video Player | Submodule Name | Vendor Code |
-|--------------|----------------|-------------|
-| [JW Player](https://info.jwplayer.com/sign-up/?utm_source=developer&utm_medium=CTA)  | jwplayerVideoProvider | 1 |
-| [video.js](https://videojs.com/)   | videojsVideoProvider | 2 |
+| --- | --- | --- |
+| [JW Player](https://info.jwplayer.com/sign-up/?utm_source=developer&utm_medium=CTA) | jwplayerVideoProvider | 1 |
+| [video.js](https://videojs.com/) | videojsVideoProvider | 2 |
+| [AdPlayer.Pro](https://adplayer.pro/) | adplayerproVideoProvider | 3 |
 
 Not seeing your desired video player ? Learn how to add support by reading our [contribution guide](#Video-Module-Contributing)
 
@@ -47,11 +49,11 @@ Optionally, if you are using an Ad Server, you can configure the Video Module to
 
 {: .table .table-bordered .table-striped }
 | Ad Server | Module Name | Vendor Code |
-|--------------|----------------|-------------|
-| [Google Ad Manager](https://admanager.google.com/)  | dfpAdServerVideo | 'gam' |
+| --- | --- | --- |
+| [Google Ad Manager](https://admanager.google.com/) | gamAdServerVideo | 'gam' |
 
 {: .alert.alert-warning :}
-**Note:** You must include the Ad Server's module in your build. 
+**Note:** You must include the Ad Server's module in your build.
 
 #### Configure Prebid
 
@@ -62,6 +64,14 @@ To register a video player with Prebid, you must use `setConfig` to set a `video
 In order for Prebid to know which Ad Unit relates to which Video Player, you must include a `video` configuration in your Ad Unit. This allows Prebid to render the ad in the proper Video Player and obtain the Ortb data from the Video Player that will render the ad.
 For the list of properties in the `video` object of the ad unit please visit the [adUnit.video reference]({{site.baseurl}}/dev-docs/adunit-reference.html#adUnit.video).
 
+#### Implementation Examples
+
+[Video.js]({{site.baseurl}}/prebid-video/video-module/integration-examples/videojs.html)
+
+[JW Player]({{site.baseurl}}/prebid-video/video-module/integration-examples/jwplayer.html)
+
+[AdPlayer.Pro]({{site.baseurl}}/prebid-video/video-module/integration-examples/adplayerpro.html)
+
 ### Features for Publishers
 
 Integrating with the Video Module gives publishers access to the following features
@@ -71,16 +81,16 @@ Integrating with the Video Module gives publishers access to the following featu
 Prebid can load the ad directly into the player when the auction is complete.
 This feature happens automatically as long as you do **not** define a `bidsBackHandler` when calling `requestBids`.
 
-<a name="events" />
+<a name="events"></a>
 
 #### Events
 
-Media, ad and Player events are added when using the Video Module. 
+Media, ad and Player events are added when using the Video Module.
 The event payload includes metadata which can be used for analytics, error handling, and customizing your integration.
 
 {: .table .table-bordered .table-striped }
 | Event Constant | Event String | Description |
-|----------------|--------------|-------------|
+| --- | --- | --- |
 | SETUP_COMPLETE | 'videoSetupComplete' | Fired when the player is instantiated and the integration is complete. At this point the API is ready to be used. |
 | SETUP_FAILED | 'videoSetupFailed' | Fired when the integration was unsuccessful. |
 | DESTROYED | 'videoDestroyed' | Fired when the player instance has been destroyed. |
@@ -126,7 +136,7 @@ The event payload includes metadata which can be used for analytics, error handl
 
 ##### Event params
 
-All Video Module events include a `divId` and `type` param in the payload by default. 
+All Video Module events include a `divId` and `type` param in the payload by default.
 The `divId` is the div id string of the player emitting the event; it can be used as an identifier. The `type` is the string name of the event.
 The remaining Payload params are listed in the following:
 
@@ -150,6 +160,7 @@ The remaining Payload params are listed in the following:
 | sourceError | object | The underlying root Error which prevented the playback. |
 
 ###### DESTROYED
+
 No additional params.
 
 ###### AD_REQUEST
@@ -189,8 +200,6 @@ No additional params.
 | adPlacementType | number | The video placements per IAB guidelines. Enum list: In-Stream: 1, In-Banner: 2, In-Article: 3, In-Feed: 4, Interstitial/Slider/Floating: 5 |
 | waterfallIndex | number | Index of the current item in the ad waterfall |
 | waterfallCount | number |  The count of items in a given ad waterfall |
-| adPodCount | number | the total number of ads in the pod |
-| adPodIndex | number | The index of the currently playing ad within an ad pod |
 | wrapperAdIds | array[string] | Ad IDs of the VAST Wrappers that were loaded while loading the Ad tag. The list returned starts at the inline ad (innermost) and traverses to the outermost wrapper ad. An empty array is returned if there are no wrapper ads. |
 
 ###### AD_STARTED
@@ -218,11 +227,9 @@ No additional params.
 | adPlacementType | number | The video placements per IAB guidelines. Enum list: In-Stream: 1, In-Banner: 2, In-Article: 3, In-Feed: 4, Interstitial/Slider/Floating: 5 |
 | waterfallIndex | number | Index of the current item in the ad waterfall |
 | waterfallCount | number |  The count of items in a given ad waterfall |
-| adPodCount | number | the total number of ads in the pod |
-| adPodIndex | number | The index of the currently playing ad within an ad pod |
 | wrapperAdIds | array[string] | Ad IDs of the VAST Wrappers that were loaded while loading the Ad tag. The list returned starts at the inline ad (innermost) and traverses to the outermost wrapper ad. An empty array is returned if there are no wrapper ads. |
 
-<a name="ad-impression-params" />
+<a name="ad-impression-params"></a>
 
 ###### AD_IMPRESSION
 
@@ -249,8 +256,6 @@ No additional params.
 | adPlacementType | number | The video placements per IAB guidelines. Enum list: In-Stream: 1, In-Banner: 2, In-Article: 3, In-Feed: 4, Interstitial/Slider/Floating: 5 |
 | waterfallIndex | number | Index of the current item in the ad waterfall |
 | waterfallCount | number |  The count of items in a given ad waterfall |
-| adPodCount | number | the total number of ads in the pod |
-| adPodIndex | number | The index of the currently playing ad within an ad pod |
 | wrapperAdIds | array[string] | Ad IDs of the VAST Wrappers that were loaded while loading the Ad tag. The list returned starts at the inline ad (innermost) and traverses to the outermost wrapper ad. An empty array is returned if there are no wrapper ads. |
 | time | number | The playback time in the ad when the event occurs, in seconds. |
 | duration | number | Total duration of an ad in seconds |
@@ -300,8 +305,6 @@ No additional params.
 | adPlacementType | number | The video placements per IAB guidelines. Enum list: In-Stream: 1, In-Banner: 2, In-Article: 3, In-Feed: 4, Interstitial/Slider/Floating: 5 |
 | waterfallIndex | number | Index of the current item in the ad waterfall |
 | waterfallCount | number |  The count of items in a given ad waterfall |
-| adPodCount | number | the total number of ads in the pod |
-| adPodIndex | number | The index of the currently playing ad within an ad pod |
 | wrapperAdIds | array[string] | Ad IDs of the VAST Wrappers that were loaded while loading the Ad tag. The list returned starts at the inline ad (innermost) and traverses to the outermost wrapper ad. An empty array is returned if there are no wrapper ads. |
 | time | number | The playback time in the ad when the event occurs, in seconds. |
 | duration | number | Total duration of an ad in seconds |
@@ -313,7 +316,7 @@ No additional params.
 | time | number | The playback time in the ad when the event occurs, in seconds. |
 | duration | number | Total duration of an ad in seconds |
 
-<a name="ad-error-params" />
+<a name="ad-error-params"></a>
 
 ###### AD_ERROR
 
@@ -344,8 +347,6 @@ No additional params.
 | adPlacementType | number | The video placements per IAB guidelines. Enum list: In-Stream: 1, In-Banner: 2, In-Article: 3, In-Feed: 4, Interstitial/Slider/Floating: 5 |
 | waterfallIndex | number | Index of the current item in the ad waterfall |
 | waterfallCount | number |  The count of items in a given ad waterfall |
-| adPodCount | number | the total number of ads in the pod |
-| adPodIndex | number | The index of the currently playing ad within an ad pod |
 | wrapperAdIds | array[string] | Ad IDs of the VAST Wrappers that were loaded while loading the Ad tag. The list returned starts at the inline ad (innermost) and traverses to the outermost wrapper ad. An empty array is returned if there are no wrapper ads. |
 | time | number | The playback time in the ad when the event occurs, in seconds. |
 | duration | number | Total duration of an ad in seconds |
@@ -544,7 +545,7 @@ No additional params.
 When an impression or error from an ad originating from a winning bid occurs, the bid will be automatically marked as used.
 
 {: .alert.alert-warning :}
-Limitations: the mechanism used to determine when an error occurred for an ad originating from a winning might fail at times when the ad server is GAM because of a limitation in GAM. 
+Limitations: the mechanism used to determine when an error occurred for an ad originating from a winning might fail at times when the ad server is GAM because of a limitation in GAM.
 
 #### Bid request Enrichment
 
@@ -561,7 +562,7 @@ The params in `bidderRequest.ortb2.site.content` are populated with information 
 This feature can be disabled by setting `video.contentEnrichmentEnabled` to `false` in the Prebid config.
 In the case where multiple video players are registered with the Video Module, the `bidderRequest.ortb2.site.content` params will be updated by the video player registered to the ad unit in the auction. If one of the Video Players is responsible for rendering the main content on the page, it may be appropriate for the `site.content` params to be populated with metadata from that player; in such case, you should populate `video.mainContentDivId` in the Prebid config with the video player's div id. |
 
-## SSPs 
+## SSPs
 
 Before bids are requested, the Video Module automatically enriches the auction. SSPs can benefit from this by reading from the proper params.
 Given that the video player is the source of truth for most video params, SSPs and DSPs can rely on the accuracy of the information.
@@ -576,7 +577,7 @@ SSPs wishing to benefit from this enrichment should read from `mediaTypes.video`
 Similarly, before bids are requested, the `bidderRequest.ortb2.site.content` param is populated in the `bidderRequest` argument of the `buildRequests` function with content metadata from the video player and its media.
 SSPs wishing to benefit from this enrichment should read from `bidderRequest.ortb2.site.content`.
 
-<a name="Video-Module-Contributing" />
+<a name="Video-Module-Contributing"></a>
 
 ## Contributing
 

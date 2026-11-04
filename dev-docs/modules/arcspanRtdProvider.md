@@ -21,14 +21,13 @@ sidebarType : 1
 
 ArcSpan is a real-time audience monetization platform focused on the needs of the world’s finest publishers and retailers. Unlock the true value of your first-party audience data while providing advertisers the targeting performance they need.
 
-{: .alert.alert-warning :}
-Disclosure: This module loads external code that is not open source and has not been reviewed by Prebid.org.
+{% include dev-docs/loads-external-javascript.md %}
 
 ### Usage
 
 Compile the ArcSpan RTD Module into your Prebid build:
 
-```
+```bash
 gulp build --modules=rtdModule,arcspanRtdProvider
 ```
 
@@ -56,6 +55,14 @@ pbjs.setConfig({
   ...
 })
 ```
+
+### Parameters
+
+{: .table .table-bordered .table-striped }
+
+| Name | Type | Description | Required | Default |
+| :--- | :--- | :--- | :--- | :--- |
+| `silo` | Integer | ArcSpan provided silo identifier used to load the contextual script | yes | n/a |
 
 {: .alert.alert-info :}
 For best results, we recommend that you also deploy ArcSpan's JavaScript tag in your tag management solution, as instructed in the implementation overview you received from your ArcSpan representative. This will ensure that more of your auctions contain ArcSpan's contextual signals. Please reach out to your ArcSpan representative if you have any questions.

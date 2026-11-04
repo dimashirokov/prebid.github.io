@@ -6,9 +6,10 @@ sidebarType: 1
 ---
 
 # First Party Data - Prebid.js
+
 {: .no_toc}
 
-* TOC
+- TOC
 {:toc}
 
 Prebid allows publishers to supply attributes related to their content
@@ -33,94 +34,191 @@ configuration or on a Prebid.js AdUnit:
 
 - Global site or user data that applies to all AdUnits, bidders, and auctions. Use [`setConfig()`](/dev-docs/publisher-api-reference/setConfig.html#setConfig-fpd)
 - Auction-specific site or user data that applies to all AdUnits and bidders in that auction. Use the `ortb2` parameter of [`requestBids()`](/dev-docs/publisher-api-reference/requestBids.html)
-- AdUnit-specific data that applies to all bidders and auctions. Define [AdUnit.ortb2Imp](/dev-docs/adunit-reference.html#first-party-data)
+- AdUnit-specific data that applies to all bidders and auctions. Define [AdUnit.ortb2Imp](/dev-docs/adunit-reference.html#first-party-data-and-floors)
 - Bidder-specific site or user data that applies to all AdUnits and auctions. Use [`setBidderConfig()`](/dev-docs/publisher-api-reference/setBidderConfig.html)
 
 ## In-Page Examples
 
 The Prebid First Party Data JSON structure reflects the OpenRTB standard.
+
 - Arbitrary attributes should go in `ortb2.site.ext.data` or `ortb2.user.data`.
 - Fields that are meant to be standard [OpenRTB 2.5](https://www.iab.com/wp-content/uploads/2016/03/OpenRTB-API-Specification-Version-2-5-FINAL.pdf) should be in `ortb2.site` or `ortb2.user`. Specfically, the standard values for 'site' are: name, domain, cat, sectioncat, pagecat, page, ref, search, keywords. For 'user' these are: yob, gender, keywords.
 - Segment taxonomy values go in `ortb2.site.content.data` or `ortb2.user.data` using the IAB standard representation.
+
+### Automatically collected first party data
+
+If not specified through any of the methods above, Prebid.js attempts to automatically fill a number of fields:
+
+{: .table .table-bordered .table-striped }
+| Field | Value | Notes |
+|-----------+--------------|
+| `site.page` | Site URL, from `pageUrl` falling back to `location.href` | [`pageUrl` config](/dev-docs/publisher-api-reference/setConfig.html#setConfig-Page-URL) |
+| `site.ref` | `document.referrer` | |
+| `site.domain` | Domain portion of `site.page` | |
+| `site.keywords` | Contents of `<meta name="keywords">` and `<script type="application/json+ld">`, if those tags are present on the page | See [configuration options](#config) |
+| `site.publisher.domain` | Second level domain portion of `site.domain` | The second-level domain portion of `sub.example.publisher.com` is `publisher.com`|
+| `device.w` | Width of the screen in pixels |
+| `device.h` | Height of the screen in pixels |
+| `device.dnt` | Do Not Track setting | [Navigator.doNotTrack](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/doNotTrack) |
+| `device.language` | User's language | [Navigator.language](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/language) |
+| `device.ua` | User agent | [Navigator.userAgent](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/userAgent) |
+| `device.sua` | User agent client hints | [uaHints config](#uaHints) |  
+| `device.ext.vpw` | Viewport width in pixels |
+| `device.ext.vph` | Viewport height in pixels |
+| `device.ext.webdriver`| `true` if the browser declares to be an automation tool | [Navigator.webdriver](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/webdriver) |
+| `regs.coppa` | COPPA Regulation flag | [COPPA config](/dev-docs/publisher-api-reference/setConfig.html#setConfig-coppa)
+| `regs.ext.gpc` | Global Privacy Control setting | [Navigator.globalPrivacyControl](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/globalPrivacyControl) |
+
+Publisher-provided first party data generally takes precedence for all fields; you can also set `null` to disable them. For example, the following discards the automatically collected `site.keywords`:  
+
+```javascript
+pbjs.setConfig({
+    ortb2: {
+        site: {
+            keywords: null
+        }
+    }
+})
+```
+
+Note however that this typically not the case for fields populated by optional modules: `consentManagementTcf` will override `regs.gdpr` and `user.consent`, `geolocationRtdProvider` will override `device.geo`, and so on.    
+
+<a id="config"></a>
+
+## Configuration
+
+{: .table .table-bordered .table-striped }
+| Param | Type | Description |
+| --- | --- | --- | --- |
+| `firstPartyData` |  Object | First party data automatic collection options |
+| `firstPartyData.uaHints`  |   Array of strings | High entropy user agent hints to collect for `device.sua` (see below) |
+| `firstPartyData.keywords` | Object | `site.kewyords` automatic collection options | 
+| `firstPartyData.keywords.meta` |  Boolean | If true (the default), collect keywords from `<meta name="keyword">` tags found on the page |
+| `firstPartyData.keywords.json` |  Boolean | If true (the default), collect keywords from `<script type="application/json+ld">` tags found on the page |
+| `firstPartyData.replaceGlobalSchain` | Boolean | Since Prebid.js 11.45. If true, a bidder-specific schain (set with `setBidderConfig`) replaces the global schain for that bidder. By default (false), it is merged with the global schain like other first party data, so the bidder receives the global nodes followed by its own. See [Supply Chain Object Module](/dev-docs/modules/schain.html#global-and-bidder-specific-together). |
+
+<a id="uaHints"></a>
+
+### User Agent client hints
+
+`device.sua` is populated with UA client hints retrieved from [`navigator.userAgentData`](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/userAgentData). You can specify the list of hints using the `uaHints` option with [any available high entropy hint](https://developer.mozilla.org/en-US/docs/Web/API/NavigatorUAData#returning_high_entropy_values):
+
+```javascript
+pbjs.setConfig({
+    firstPartyData: {
+        uaHints: [
+            'platform',
+            // ...
+        ]
+    }
+})
+```
+
+If `uaHints` is set to an empty array or is not set, only low-entropy hints are used.
 
 ### Supplying Global Data
 
 Here's how a publisher can let all bid adapters have access
 to first party data that might be useful in ad targeting that's good in PBJS 4.30 and later:
-{% highlight js %}
+
+```javascript
 pbjs.setConfig({
-   ortb2: {
-       site: {
-           name: "example",
-           domain: "page.example.com",
-           cat: ["IAB2"],
-           sectioncat: ["IAB2-2"],
-           pagecat: ["IAB2-2"],
-           page: "https://page.example.com/here.html",
-           ref: "https://ref.example.com",
-           keywords: "power tools, drills",
-           search: "drill",
-           content: {
-		userrating: "4",
-		data: [{
-          	    name: "www.dataprovider1.com",
-          	    ext: {
-		        segtax: 7,
-			cids: [ "iris_c73g5jq96mwso4d8" ]
-		    },
-		    segment: [
-            		{ id: "687" },
-            		{ id: "123" }
-		    ]
+    ortb2: {
+        // this is where the contextual data is placed
+        site: {
+            name: "example",
+            domain: "page.example.com",
+
+            // OpenRTB 2.5 spec / Content Taxonomy
+            cat: ["IAB2"],
+            sectioncat: ["IAB2-2"],
+            pagecat: ["IAB2-2"],
+
+            page: "https://page.example.com/here.html",
+            ref: "https://ref.example.com",
+            keywords: "power tools, drills",
+            search: "drill",
+
+            content: {
+                userrating: "4",
+                data: [{
+                    name: "www.dataprovider1.com", // who resolved the segments
+                    ext: {
+                        segtax: 7, // taxonomy used to encode the segments
+                        cids: ["iris_c73g5jq96mwso4d8"]
+                    },
+                    // the bare minimum are the IDs. These IDs are the ones from the new IAB Content Taxonomy v3
+                    segment: [{ id: "687" }, { id: "123" } ]
                 }]
-	   },
-	   ext: {
-               data: {   // fields that aren't part of openrtb 2.6
-                   pageType: "article",
-                   category: "repair"
-               }
-	   }
+            },
+            ext: {
+                data: { // fields that aren't part of openrtb 2.6
+                    pageType: "article",
+                    category: "repair"
+                }
+            }
         },
+
+        // this is where the user data is placed
         user: {
-           keywords: "a,b",
-	   data: [{
-	       name: "dataprovider.com",
-	       ext: { segtax: 4 },
-               segment: [
-		  { id: "1" }
-               ]
-	   }],
-	   ext: {
-               data: {
-                  registered: true,
-                  interests: ["cars"]
-	       }
-           }
+            keywords: "a,b",
+            data: [{
+                name: "dataprovider.com",
+                ext: {
+                    segtax: 4
+                },
+                segment: [{
+                    id: "1"
+                }]
+            }],
+            ext: {
+                data: {
+                    registered: true,
+                    interests: ["cars"]
+                }
+            }
         },
         regs: {
             gpp: "abc1234",
-            gpp_sid: [7]
+            gpp_sid: [7],
+            ext: {
+                dsa: {
+                    dsarequired: 3,
+                    pubrender: 0,
+                    datatopub: 2,
+                    transparency: [
+                        {
+                            domain: 'platform1domain.com',
+                            dsaparams: [1]
+                        },
+                        {
+                            domain: 'platform2domain.com',
+                            dsaparams: [1, 2]
+                        }
+                    ]
+                }
+            }
         }
     }
 });
-{% endhighlight %}
+```
 
 {: .alert.alert-warning :}
 Note that supplying first party **user** data may require special
-consent in certain regions. Prebid.js does **not** police the passing
-of user data as part of its GDPR or CCPA modules.
+consent in certain regions. By default, Prebid's [tcfControl](/dev-docs/modules/tcfControl.html) module does **not** police the passing
+of user data, but can optionally do so if the `personalizedAds` rule is enabled.
 
 {: .alert.alert-warning :}
 If you're using PBJS version 4.29 or before, replace the following in the example above: 'ortb' with 'fpd', 'site' with 'context' and 'site.ext.data' with 'context.data'.
 
 ### Supplying Auction-Specific Data
 
-In some situations the same page may wish to supply different `site` data for some of its sections, 
+In some situations the same page may wish to supply different `site` data for some of its sections,
 for example in infinite scroll or instream video scenarios where multiple pieces of content that would benefit from different contexts are served together.
 
-To support this use case, Prebid version 7 and above accepts auction-specific first-party data as a parameter to `requestBids`. For example: 
+To support this use case, Prebid version 7 and above accepts auction-specific first-party data as a parameter to `requestBids`. For example:
 
-{% highlight js %}
+```javascript
 pbjs.requestBids({
     ortb2: {
         site: {
@@ -140,14 +238,13 @@ pbjs.requestBids({
         }
     }
 });
-{% endhighlight %}
-
+```
 
 ### Supplying AdUnit-Specific Data
 
 If an attribute is specific to an AdUnit, it can be passed this way:
 
-{% highlight js %}
+```javascript
 pbjs.addAdUnits({
     code: "test-div",
     mediaTypes: {
@@ -157,7 +254,7 @@ pbjs.addAdUnits({
     },
     ortb2Imp: {
         ext: {
-	        data: {
+            data: {
                 pbadslot: "homepage-top-rect",
                 adUnitSpecificAttribute: "123"
             }
@@ -165,12 +262,11 @@ pbjs.addAdUnits({
     },
     ...
 });
-{% endhighlight %}
+```
 
-Another case is [declaring rewarded](https://github.com/InteractiveAdvertisingBureau/openrtb2.x/blob/422eedb76e8730c89dcac75c7427c18cfa10e8c4/2.6.md?plain=1#L993). Here is how one might do that: 
+Another case is [declaring rewarded](https://github.com/InteractiveAdvertisingBureau/openrtb2.x/blob/422eedb76e8730c89dcac75c7427c18cfa10e8c4/2.6.md?plain=1#L993). Here is how one might do that:
 
-
-{% highlight js %}
+```javascript
 pbjs.addAdUnits({
     code: "test-div-rewarded",
     mediaTypes: {
@@ -181,7 +277,7 @@ pbjs.addAdUnits({
     ortb2Imp: {
         rwdd: 1,
         ext: {
-	        data: {
+            data: {
                 pbadslot: "my-rewarded-rectangle",
                 adUnitSpecificAttribute: "123"
             }
@@ -189,25 +285,7 @@ pbjs.addAdUnits({
     },
     ...
 });
-{% endhighlight %}
-
-You may also specify adUnit-specific transaction IDs using `ortb2Imp.ext.tid`, and Prebid will use them instead of generating random new ones. This is useful if you are auctioning the same slots through multiple header bidding libraries. Note: you must take care to not re-use the same transaction IDs across different ad units or auctions. Here's a simplified example passing a tid through the [requestBids](/dev-docs/publisher-api-reference/requestBids.html) function:
-
-{% highlight js %}
-const tid = crypto.randomUUID();
-pbjs.requestBids({
-   adUnits: [{
-    code: 'test-div',
-    // ...
-    ortb2Imp: {
-        ext: {
-          tid: tid
-        }
-    }
-   }]
-});
-// reuse `tid` when auctioning `test-div` through some other header bidding wrapper   
-{% endhighlight %}
+```
 
 {: .alert.alert-info :}
 Prebid does not support AdUnit-specific **user** data, nor does it support
@@ -222,7 +300,7 @@ If you're using PBJS version 4.29 or before, replace the following in the exampl
 Use the [`setBidderConfig()`](/dev-docs/publisher-api-reference/setBidderConfig.html) function to supply bidder-specific data. In this example, only bidderA and bidderB will get access to the supplied
 global data.
 
-{% highlight js %}
+```javascript
 pbjs.setBidderConfig({
    bidders: ['bidderA', 'bidderB'],
    config: {
@@ -253,13 +331,13 @@ pbjs.setBidderConfig({ // different bidders can receive different data
      ortb2: { ... }
    }
 });
-{% endhighlight %}
+```
 
 ### Supplying App or DOOH ORTB Objects
 
-Occasionally, an app which embeds a webview might run Prebid.js. In this case, the app object is often specified for OpenRTB, and the site object would be invalid. When this happens, one should specify app.content.data in place of site.content.data. We can also imagine scenarios where billboards or similar displays are running Prebid.js. In the case of a DOOH object existing, both the site object and the app object are considered invalid. 
+Occasionally, an app which embeds a webview might run Prebid.js. In this case, the app object is often specified for OpenRTB, and the site object would be invalid. When this happens, one should specify app.content.data in place of site.content.data. We can also imagine scenarios where billboards or similar displays are running Prebid.js. In the case of a DOOH object existing, both the site object and the app object are considered invalid.
 
-{% highlight js %}
+```javascript
 pbjs.setConfig({
   ortb2: {
     app: {
@@ -299,15 +377,16 @@ pbjs.setConfig({
      }
     }
   }
-)
+});
 
-{% endhighlight %}
+```
 
 ### Supplying OpenRTB Content Data
+
 OpenRTB `content` object describes specific (mostly audio/video) content information, and it is useful for targeting.
 For website ad, the content object should be defined in `ortb2.site.content`, for non-browser ad, it should be defined in `ortb2.app.content`
 
-{% highlight js %}
+```javascript
 pbjs.setConfig({
     ortb2: {
         site: {
@@ -329,21 +408,22 @@ pbjs.setConfig({
         }
     }
 });
-{% endhighlight %}
+```
 
 ## Segments and Taxonomy
 
 The [IAB](https://iab.com) offers standard content and audience taxonomies for categorizing sites and users. Prebid supports defining these values as first party data in `site.content.data` or `user.data` as shown in examples above and below.
 
-```
-        user: {
-	   data: [{
-	       name: "dataprovider.com", // who resolved the segments
-	       ext: { segtax: 4 },       // taxonomy used to encode the segments
-               segment: [
-		  { id: "1" }
-               ]
-	   }],
+```javascript
+user: {
+    data: [{
+        name: "dataprovider.com", // who resolved the segments
+        ext: { segtax: 4 },       // taxonomy used to encode the segments
+            segment: [
+                { id: "1" }
+            ]
+    }],
+}
 ```
 
 The new extension is `segtax`, which identifies the specific taxonomy used to
@@ -360,6 +440,7 @@ here to their page. For now, here's the beta table defining the segtax values:
 | 4 | Audience | 1.1 | [IAB - Audience Taxonomy version 1.1](https://iabtechlab.com/wp-content/uploads/2020/07/IABTL-Audience-Taxonomy-1.1-Final.xlsx) |
 | 5 | Content | 2.1 | [IAB - Content Taxonomy version 2.1](https://iabtechlab.com/standards/content-taxonomy/) |
 | 6 | Content | 2.2 | [IAB - Content Taxonomy version 2.2](https://iabtechlab.com/standards/content-taxonomy/) |
+| 7 | Content | 3.0 | [IAB - Content Taxonomy version 3.0](https://iabtechlab.com/standards/content-taxonomy/) |
 
 {: .alert.alert-info :}
 The [IAB version of this table](https://github.com/InteractiveAdvertisingBureau/AdCOM/blob/master/AdCOM%20v1.0%20FINAL.md#list--category-taxonomies-) is associated with ADCOM. Publishers should check with their SSPs and DSPs to confirm which
@@ -369,11 +450,11 @@ segment taxonomies they support.
 
 Prebid.js bid adapters are supplied global data in the `ortb2` property of [bid requests](/dev-docs/bidder-adaptor.html#building-the-request):
 
-{% highlight js %}
+```javascript
 buildRequests: function(validBidRequests, bidderRequest) {
    const firstPartyData = bidderRequest.ortb2;
 }
-{% endhighlight %}
+```
 
 AdUnit-specific values must be parsed out of the AdUnit object.
 

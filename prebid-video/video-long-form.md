@@ -10,16 +10,20 @@ sidebarType: 4
 ---
 
 # Getting Started with Long-Form Video
+
 {: .no_toc }
+
+{: .alert.alert-warning :}
+Ad pod (long-form) video support was removed in Prebid.js 11.0. This page applies to Prebid.js 10.x and earlier only.
 
 If you’re new to header bidding and Prebid review the following to get a general understanding of Prebid.js.
 
--	[What Is Prebid?](/overview/intro.html)
--	[Getting Started with Prebid](/adops/before-you-start.html)
+- [What Is Prebid?](/overview/intro.html)
+- [Getting Started with Prebid](/adops/before-you-start.html)
 
 See [Prebid.js Video Overview](/prebid-video/video-overview.html) for a general description and high-level overview of working with video demand in Prebid.js.
 
-* TOC
+- TOC
 {:toc}
 
 ## Ad Server Setup
@@ -34,15 +38,16 @@ To implement header bidding for long-form video start by [downloading Prebid.js]
 
 Before downloading, select the adapters you want to include. (You can add more adapters later.)
 
-- Include at least one video adapter. Find a list of available video adapters [here](/dev-docs/bidders.html#bidder-video-native).
+- Include at least one video adapter. Find a list of available video adapters in [the video bidders table](/dev-docs/bidders.html).
 - Include the [FreeWheel](/dev-docs/modules/freewheel.html) Ad Server module.
 - Include the [Category Translation](/dev-docs/modules/categoryTranslation.html) module.  
 - If you’ll be integrating with Prebid Server, be sure to include “Prebid Server” in the list of adapters.
 
 ### Ensuring Competitve Separation
+
  You will need to configure Prebid to ensure competitive separation, the process of preventing two ads from the same industry appearing within an ad pod. After you have instantiated a Prebid instance call the setConfig method and add the following key-values.  
 
-```
+```javascript
 pbjs.setConfig({
   'adpod': {
     'brandCategoryExclusion': true
@@ -56,7 +61,7 @@ As with instream and outstream videos, you must set the video context for long-f
 
  As with all ad unit types you must include a list of bidders. The parameters differ depending on which bidder you’re including. For a list of parameters for each bidder, see [Bidders’ Params](/dev-docs/bidders.html).  
 
-```
+```javascript
 var longFormatAdUnit = {
     video: {
        // required params
@@ -76,9 +81,9 @@ var longFormatAdUnit = {
     }
 
     bids: [{
-            bidder: 'appnexus',
+            bidder: 'msft',
             params: {
-                placementId: 123456789,
+                placement_id: 123456789,
             }
         }]
 }
@@ -93,7 +98,7 @@ A string indicating the ad unit type.
 An array of numbers indicating the height and width of the video player size that will be passed to the demand partners.
 
 `video.adPodDurationSec`  
-A number indicating how long the ad pod should run.   
+A number indicating how long the ad pod should run.
 
 `video.durationRangeSec`  
 A number indicating how long the creatives of an ad pod should run.
@@ -118,7 +123,7 @@ A number representing the episode number of the television series the adpod will
 `video.contentLengthSec`  
 A number representing the length of the content the adpod will appear in.
 
-`video.contentMode`   
+`video.contentMode`
 A string indicating the type of content being displayed in the video player. There are two options, `live` and `on-demand`.
 
 <div class="alert alert-info">
@@ -126,11 +131,13 @@ A string indicating the type of content being displayed in the video player. The
   <p>If you’re using Prebid Server, you must also include the mediaTypes.video.mimes field, as this is required by OpenRTB.</p>
 
   <pre>
-        mediaTypes: {
-            video: {
-                context: 'apod', // or 'instream', 'outstream'
-                playerSize: [640, 480],
-                mimes: ['video/mp4'],
+  mediaTypes: {
+      video: {
+          context: 'apod', // or 'instream', 'outstream'
+          playerSize: [640, 480],
+          mimes: ['video/mp4'],
+      }
+  }
   </pre>
 
   <p>For more on Prebid Server ad unit requirements, see <a href="/prebid-server/use-cases/pbs-pbjs.html">Getting Started with Prebid Server – Video</a>.</p>
@@ -148,9 +155,9 @@ To prioritize certain video deals and ensure delivery and performance within the
 `prioritizeDeals`  
 A  boolean that indicates if deals should be given a higher preference. If true, Prebid will set the value of `hb_pb_cat_dur` with `bid.video.tier` replacing the cpm value. For example:
 
-  <pre>
-    hb_pb_cat_dur=dealId_395_15s
-  </pre>
+```text
+hb_pb_cat_dur=dealId_395_15s
+```
 
 `dealTier`  
 An object that enables publishers to set a prefix and minimum deal tier for each bidder. The `dealTier` object enables publishers to have different line item setups with varying priorities.
@@ -161,64 +168,60 @@ An optional string that enables bidders to target deal line items.
 `dealTier.minDealTier`  
 An integer that will give higher preference to deal bids which return tier greater than minDealTier.  Bids with `minDealTier` values less than five will not be ignored, however their cache key will contain `dealId` in place of `cpm`. These bids will be auctioned as non-deal bids.
 
-    <pre>
-    // This will replace the cpm with dealId in cache key as well as targeting kv pair when prioritizeDeals flag is set to true.
-        pbjs.setConfig({
-        adpod: {
-          prioritizeDeals: true,
-          dealTier: {
-            'appnexus': {
-              prefix: 'tier',
-              minDealTier: 5
-            },
-            'some-other-bidder': {
-              prefix: 'deals',
-              minDealTier: 20
-            }
-          }
-        }
-        })
-    </pre>
+```javascript
+// This will replace the cpm with dealId in cache key as well as targeting kv pair when prioritizeDeals flag is set to true.
+pbjs.setConfig({
+  adpod: {
+    prioritizeDeals: true,
+    dealTier: {
+      'msft': {
+        prefix: 'tier',
+        minDealTier: 5
+      },
+      'some-other-bidder': {
+        prefix: 'deals',
+        minDealTier: 20
+      }
+    }
+  }
+})
+```
 
 For adpods, the bidder will return multiple bids. Each bid can have a different priority/deal tier setting. To enable publishers to have control over the deal tier a `filterBids` setting has been added to `pbjs.adServers.freewheel.getTargeting` to select certain deal bids.
 
-  <pre>
-    pbjs.adServers.freewheel.getTargeting({
-      codes: [adUnitCode1],
-      callback: function(err, targeting) {
-          //pass targeting to player api
-      }
-    });
-  </pre>
+```javascript
+pbjs.adServers.freewheel.getTargeting({
+  codes: [adUnitCode1],
+  callback: function(err, targeting) {
+      //pass targeting to player api
+  }
+});
+```
 
 Below is an example of a bid response for deals.  
 
-  <pre>
-  // Sample return targeting key value pairs
+```javascript
+// Sample return targeting key value pairs
+{
+  'adUnitCode-1': [
     {
-    'adUnitCode-1': [
-      {
-        'hb_pb_cat_dur': 'tier9_400_15s', // Bid with deal id
-      },
-      {
-        'hb_pb_cat_dur': 'tier7_401_15s', // Bid with deal id
-      },
-      {
-        'hb_pb_cat_dur': '15.00_402_15s',
-      },
-      {
-        'hb_cache_id': '123'
-      }
-    ]
+      'hb_pb_cat_dur': 'tier9_400_15s', // Bid with deal id
+    },
+    {
+      'hb_pb_cat_dur': 'tier7_401_15s', // Bid with deal id
+    },
+    {
+      'hb_pb_cat_dur': '15.00_402_15s',
+    },
+    {
+      'hb_cache_id': '123'
     }
-  </pre>
-
-### Examples
-
-See [Prebid Video Examples](/examples/video/long-form/pb-ve-lf-freewheel.html) for examples of long-form video ads.
+  ]
+}
+```
 
 ## Further Reading
 
--   [Prebid.js for Video Overview](/prebid-video/video-overview.html)
--   [Getting Started with Video for Prebid.js](/prebid-video/video-getting-started.html)
--   [What is Prebid?](/overview/intro.html)
+- [Prebid.js for Video Overview](/prebid-video/video-overview.html)
+- [Getting Started with Video for Prebid.js](/prebid-video/video-getting-started.html)
+- [What is Prebid?](/overview/intro.html)

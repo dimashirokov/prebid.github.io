@@ -4,8 +4,8 @@ title: One Fifty Two Media
 description: Prebid One Fifty Two Media Bidder Adaptor
 pbjs: true
 biddercode: oftmedia
-aliasCode : appnexus
-gdpr_supported: true
+aliasCode: msft
+tcfeu_supported: true
 coppa_supported: true
 usp_supported: true
 pbs: false

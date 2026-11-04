@@ -6,12 +6,13 @@ sidebarType: 1
 ---
 
 # Interstitial Ads - Prebid.js
+
 {: .no_toc}
 
-* TOC
+- TOC
 {:toc}
 
-Interstitial ads are often placed at natural transition points of the user's experience, such as moving from one page to the next. These ads are generally center-aligned overlaying user content. 
+Interstitial ads are often placed at natural transition points of the user's experience, such as moving from one page to the next. These ads are generally center-aligned overlaying user content.
 
 This document covers how to setup interstitial ad units.
 
@@ -19,10 +20,10 @@ This document covers how to setup interstitial ad units.
 Please check with each of this AdUnit's bidders to ensure they're reading the interstitial flag from the standard Prebid location.
 If the bidder doesn't specifically support interstitials, results may be unexpected.
 
-
 ## How It Works
 
 The  flow for publishers is the following:
+
 - Publisher traffics an interstitial line item with appropriate size(s) ([GAM example](https://support.google.com/admanager/answer/9840201?hl=en))
 - Publisher defines ad server interstitial slot on the page ([GAM Example](https://developers.google.com/publisher-tag/samples/display-web-interstitial-ad))
 - Publisher creates a PBJS AdUnit and defines the appropriate interstitial ad sizes, adUnit.mediaType, and a special interstitial flag
@@ -30,11 +31,13 @@ The  flow for publishers is the following:
 - Prebid requests bids for interstitial adUnits and invokes the ad server call from the requestBids callback
 
 ## Ad Sizes
-Publishers must set the desired size in the respective adUnit. 
+
+Publishers must set the desired size in the respective adUnit.
 
 The below sizes are specials sizes to indicate the ad will be full screen for mobile or tablet devices:
+
 - 320x480: Fullscreen mobile phone portrait ad
-- 480x320: Fullscreen mobile phone landscape ad 
+- 480x320: Fullscreen mobile phone landscape ad
 - 768x1024: Fullscreen tablet portrait ad
 - 1024x768: Fullscreen tablet landscape ad
 
@@ -46,7 +49,7 @@ The Prebid Interstitial flag reflects the OpenRTB standard, specifying it at the
 
 If an attribute is specific to an AdUnit, it can be passed this way:
 
-{% highlight js %}
+```javascript
 pbjs.addAdUnits({
     code: "test-div",
     mediaTypes: {
@@ -61,20 +64,177 @@ pbjs.addAdUnits({
       ... bidders that support interstitials ...
     ]
 });
-{% endhighlight %}
+```
 
+### Mobile Web Interstitial with GPT
 
+Google Publisher Tag (GPT) web interstitials are out-of-page slots, so they do
+not require a container `div`. However, the Prebid.js ad unit still needs a
+`code` value that can be matched to the GPT slot when setting targeting. In the
+example below, both use the ad unit path as the shared identifier.
+
+GPT web interstitials can prerender the creative markup before the ad is
+actually displayed. For this reason, the Prebid.js ad unit should be declared
+with `deferBilling: true`, and the publisher should call `pbjs.triggerBilling()`
+only after deciding the interstitial is billable. The example below stores the
+winning Prebid bid and triggers billing from GPT's `impressionViewable` event;
+publishers should customize that trigger for their requirements. Confirm that
+participating bid adapters support `onBidBillable` before relying on deferred
+billing.
+
+```javascript
+var PREBID_TIMEOUT = 1000;
+var INTERSTITIAL_AD_UNIT = '/1234567/homepage/mobile-web-interstitial';
+
+var googletag = googletag || {};
+googletag.cmd = googletag.cmd || [];
+
+var pbjs = pbjs || {};
+pbjs.que = pbjs.que || [];
+
+var interstitialSlot;
+var interstitialWinningBid;
+var interstitialBillingTriggered = false;
+
+var adUnits = [{
+    code: INTERSTITIAL_AD_UNIT,
+    deferBilling: true,
+    mediaTypes: {
+        banner: {
+            sizes: [[320, 480], [480, 320]]
+        }
+    },
+    ortb2Imp: {
+        instl: 1
+    },
+    bids: [{
+        bidder: 'bidderThatSupportsInterstitials',
+        params: {
+            placementId: '12345'
+        }
+    }]
+}];
+
+function requestInterstitialBids() {
+    pbjs.que.push(function() {
+        pbjs.onEvent('bidWon', function(bid) {
+            interstitialWinningBid = bid;
+        }, INTERSTITIAL_AD_UNIT);
+        pbjs.addAdUnits(adUnits);
+        pbjs.requestBids({
+            adUnitCodes: [INTERSTITIAL_AD_UNIT],
+            bidsBackHandler: sendInterstitialAdServerRequest,
+            timeout: PREBID_TIMEOUT
+        });
+    });
+}
+
+function sendInterstitialAdServerRequest() {
+    if (pbjs.interstitialAdServerRequestSent || !interstitialSlot) {
+        return;
+    }
+
+    pbjs.interstitialAdServerRequestSent = true;
+    googletag.cmd.push(function() {
+        if (pbjs.libLoaded) {
+            pbjs.que.push(function() {
+                pbjs.setTargetingForGPTAsync([INTERSTITIAL_AD_UNIT]);
+                googletag.pubads().refresh([interstitialSlot]);
+            });
+        } else {
+            // Prebid.js never loaded (e.g. it was blocked), so pbjs.que would never
+            // run. Request the slot from GPT directly so it isn't left empty.
+            googletag.pubads().refresh([interstitialSlot]);
+        }
+    });
+}
+
+function triggerInterstitialBilling() {
+    if (interstitialBillingTriggered || !interstitialWinningBid || !pbjs.libLoaded) {
+        return;
+    }
+
+    interstitialBillingTriggered = true;
+    pbjs.que.push(function() {
+        pbjs.triggerBilling(interstitialWinningBid);
+    });
+}
+
+googletag.cmd.push(function() {
+    interstitialSlot = googletag.defineOutOfPageSlot(
+        INTERSTITIAL_AD_UNIT,
+        googletag.enums.OutOfPageFormat.INTERSTITIAL
+    );
+
+    if (!interstitialSlot) {
+        return;
+    }
+
+    interstitialSlot.addService(googletag.pubads());
+    googletag.pubads().disableInitialLoad();
+    googletag.pubads().addEventListener('impressionViewable', function(event) {
+        if (event.slot === interstitialSlot) {
+            triggerInterstitialBilling();
+        }
+    });
+    googletag.enableServices();
+
+    // For pages using single-request architecture with other ad slots, call
+    // googletag.display(interstitialSlot) only after defining the static slots.
+    googletag.display(interstitialSlot);
+    requestInterstitialBids();
+});
+
+setTimeout(sendInterstitialAdServerRequest, PREBID_TIMEOUT);
+```
+
+In this example:
+
+- `ortb2Imp.instl: 1` signals interstitial demand to bidders that support it.
+- `deferBilling: true` prevents Prebid.js from calling `onBidBillable` at win
+  time. Store the winning bid and call `pbjs.triggerBilling()` when your chosen
+  signal indicates that the GPT web interstitial is billable.
+- `defineOutOfPageSlot()` may return `null` when the page or device does not
+  support GPT web interstitials, so check for that before requesting bids.
+- `disableInitialLoad()` prevents GPT from requesting the interstitial until
+  either Prebid.js targeting has been set, or the timeout expires and the sample
+  falls back to a GPT refresh without Prebid.js targeting.
+- `display()` registers the GPT web interstitial slot. The ad appears only when
+  GPT receives a fill and an eligible GPT web interstitial trigger occurs, such
+  as a supported link click.
+- The `impressionViewable` listener is one example billing trigger. Use the GPT
+  or application event that best represents when the interstitial should be
+  billed for your integration.
+
+#### Ad server setup
+
+For Prebid bids to serve in the GPT web interstitial, Google Ad Manager needs Prebid line items that can fill it:
+
+- Create Prebid line items and creatives as described in [GAM Step by Step - Line Items](/adops/step-by-step.html) and [GAM Step by Step - Banner Creatives](/adops/gam-creative-banner-sbs.html), targeting the `hb_pb` (or bidder-specific) key-values.
+- Target those line items to the ad unit used for the interstitial slot (`/1234567/homepage/mobile-web-interstitial` in the example), and give them creative sizes that match the sizes requested in the Prebid.js ad unit, such as 320x480 and 480x320.
+- Follow Google's guide to [trafficking web interstitials](https://support.google.com/admanager/answer/9840201) for any interstitial-specific line item settings.
+
+The Prebid Universal Creative renders the winning bid using `hb_adid`, as for any other banner ad.
 
 ## How Bid Adapters Should Read Interstitial Flag
 
 To access global data, a Prebid.js bid adapter needs only to retrieve the interstitial flag from the adUnit like this:
 
-{% highlight js %}
+```javascript
 utils.deepAccess(bidRequest.ortb2Imp, 'instl')
-{% endhighlight %}
-
+```
 
 The assumption is that bid adapters will copy the values to the appropriate protocol location for their endpoint.
+
+## Billing Deferral
+
+Optimizing when billing occurs for an interstitial ad can sometimes be tricky.  The following built-in Prebid.js functionality can help assist with this:
+
+- Bid adapters can provide a method called `onBidBillable(bid)` which will be invoked by Prebid.js when it deems a bid to be billable (Note: A bid adapter must have the onBidBillable method configured for this to work).
+- When a bid wins, it is by default also billable. That is, by default, Prebid.js will invoke the bid adapter methods onBidWon and onBidBillable one after the other.
+- A publisher can flag individual adUnits as being separately billable with the following configuration: `pbjs.addAdUnits({deferBilling: true, ...})`
+- Winning bids for adUnits with deferBilling set to true will trigger a bid adapters onBidWon method but not their onBidBillable method.
+- Finally, when appropriate (e.g. an interstitial is displayed), the publisher may call `pbjs.triggerBilling(winningBidObjectToBill)` with the winning bid to be billed, which would trigger a bid adapters onBidBillable method.
 
 ## Related Topics
 

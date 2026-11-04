@@ -3,19 +3,18 @@ layout: bidder
 title: Lifestreet
 description: Prebid Lifestreet Bidder Adaptor
 pbjs: true
-pbs: true
+pbs: false
 biddercode: lifestreet
 media_types: video
-gdpr_supported: true
+tcfeu_supported: true
 usp_supported: true
 gvl_id: 67
 enable_download: false
-pbjs_version_notes: not ported to 5.x, added back 7.13
+pbjs_version_notes:
 sidebarType: 1
 ---
 
-
-### Bid Params
+## Bid Params
 
 {: .table .table-bordered .table-striped }
 | Name      | Scope    | Description | Example        | Type     |
